@@ -3,7 +3,9 @@ FROM debian:jessie
 RUN apt-get update && apt-get install -y \
 		bzip2 \
 		curl \
+                gawk \
 		gcc \
+                libperl4-corelibs-perl \
 		make \
 	&& rm -rf /var/lib/apt/lists/*
 
@@ -91,6 +93,16 @@ RUN set -x \
 	&& chroot rootfs /bin/getconf _NPROCESSORS_ONLN \
 	\
 	&& chroot rootfs /bin/busybox --install /bin
+
+RUN cd /usr/src \
+        && curl -fsSL http://ftp.gnu.org/gnu/libc/glibc-2.23.tar.bz2 -o glibc-2.23.tar.bz2 \
+        && tar -xjf glibc-2.23.tar.bz2 \
+        && cd glibc-2.23 \
+        && mkdir build \
+        && cd build \
+        && ../configure --enable-add-ons --disable-sanity-checks --prefix= \
+        && make \
+        && make install install_root=/usr/src/busybox/rootfs
 
 RUN set -ex \
 	&& buildrootVersion='2015.11.1' \
